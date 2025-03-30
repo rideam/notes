@@ -29,7 +29,6 @@ export default async function NotesPage() {
       {notes.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <p className="text-gray-500 dark:text-gray-400 mb-4">You don't have any notes yet.</p>
-          <CreateNote variant="default" />
         </div>
       ) : (
         <ul className="space-y-4">
