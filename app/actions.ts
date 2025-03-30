@@ -142,40 +142,26 @@ export const signOutAction = async () => {
 };
 
 export async function getNotes() {
-  "use server";
-  try {
+    const supabase = await createClient()
 
-  const supabase = await createClient();
-  
-  // Get the current user
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) {
-    throw new Error("User not authenticated");
-  }
-  
-  const { data: notes, error } = await supabase.rpc(
-    'slow_get_notes',
-    { p_user_id: userData.user.id }
-  );
-  
-  // If there's a database error, throw it
-  if (error) {
-    console.error('Error fetching notes:', error);
-    throw new Error("Failed to retrieve notes");
-  }
-  
-  // Return the notes
-  return notes;
-
-  } catch (error) {
-    console.error('Error in getNotes:', error);
+    // Get the current user
+    const { data: userData } = await supabase.auth.getUser()
+    if (!userData.user) {
+      return []
+    }
     
-    // Create a custom error with a generic message
-    const clientError = new Error("Something went wrong while loading your notes. Please try again later.");
+    // Only fetch notes belonging to the current user
+    const { data: notes, error } = await supabase
+      .from('notes')
+      .select('*')
+      .eq('user_id', userData.user.id)
     
-    // Rethrow the error with generic message for the client
-    throw clientError;
-  }
+    if (error) {
+      console.error('Error fetching notes:', error)
+      return []
+    }
+    
+    return notes;
 }
 
 export async function createNote(formData: FormData) {
