@@ -190,4 +190,4 @@ This changes the `getNotes` server action to use the `slow_get_notes` Postgres f
 
 [Sign up to Vercel](https://vercel.com/signup) using your GitHub account, if you haven't already. Save this notes project in a GitHub repo, then click the ["New Project"](https://vercel.com/new) button at the top right of your dashboard. You'll be presented with a list of Git repositories that the Git account you've signed up with has write access to. Import the notes project, a page will be displayed where you can configure your project before it's deployed.
 
-Select Next.js as the [framework preset](https://vercel.com/docs/deployments/configure-a-build#framework-preset). Add the `.env` variables to the [environment variables](https://vercel.com/docs/environment-variables) and then click the "Deploy" button to deploy the app.
+Select Next.js as the [**Framework Preset**](https://vercel.com/docs/deployments/configure-a-build#framework-preset). Keep the **Root Directory** as `./`. Add the `.env` variables to the [**Environment Variables**](https://vercel.com/docs/environment-variables) and then click the "Deploy" button to deploy the app.
