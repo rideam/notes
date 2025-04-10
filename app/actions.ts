@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from 'next/cache';
+import * as Sentry from "@sentry/nextjs";
 
 export type Note = {
   id?: string
@@ -166,34 +167,81 @@ export async function getNotes() {
 }
 */
 
+// export async function getNotes() {
+//   "use server";
+//   try {
+
+//   const supabase = await createClient();
+  
+//   // Get the current user
+//   const { data: userData } = await supabase.auth.getUser();
+//   if (!userData.user) {
+//     throw new Error("User not authenticated");
+//   }
+  
+//   const { data: notes, error } = await supabase.rpc(
+//     'slow_get_notes',
+//     { p_user_id: userData.user.id }
+//   );
+  
+//   // If there's a database error, throw it
+//   if (error) {
+//     console.error('Error fetching notes:', error);
+//     throw new Error("Failed to retrieve notes");
+//   }
+  
+//   // Return the notes
+//   return notes;
+
+//   } catch (error) {
+//     console.error('Error in getNotes:', error);
+    
+//     // Create a custom error with a generic message
+//     const clientError = new Error("Something went wrong while loading your notes. Please try again later.");
+    
+//     // Rethrow the error with generic message for the client
+//     throw clientError;
+//   }
+// }
+
 export async function getNotes() {
   "use server";
   try {
-
-  const supabase = await createClient();
-  
-  // Get the current user
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) {
-    throw new Error("User not authenticated");
-  }
-  
-  const { data: notes, error } = await supabase.rpc(
-    'slow_get_notes',
-    { p_user_id: userData.user.id }
-  );
-  
-  // If there's a database error, throw it
-  if (error) {
-    console.error('Error fetching notes:', error);
-    throw new Error("Failed to retrieve notes");
-  }
-  
-  // Return the notes
-  return notes;
-
+    return await Sentry.withServerActionInstrumentation(
+      "getNotesServerAction",
+      {
+        recordResponse: true,
+      },
+      async () => {
+        // Get the client
+        const supabase = await createClient();
+        
+        // Get the current user
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) {
+          throw new Error("User not authenticated");
+        }
+        
+        const { data: notes, error } = await supabase.rpc(
+          'slow_get_notes',
+          { p_user_id: userData.user.id }
+        );
+        
+        // If there's a database error, throw it
+        if (error) {
+          console.error('Error fetching notes:', error);
+          Sentry.captureException(error);
+          throw new Error("Failed to retrieve notes");
+        }
+        
+        // Return the notes
+        return notes;
+      },
+    );
   } catch (error) {
+    // Capture the error in Sentry with full details
     console.error('Error in getNotes:', error);
+    Sentry.captureException(error);
     
     // Create a custom error with a generic message
     const clientError = new Error("Something went wrong while loading your notes. Please try again later.");
